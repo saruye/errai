@@ -6,10 +6,6 @@
   <artifactId>errai-cdi-jboss</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <jboss.version>8.0.0.Final</jboss.version>
-  </properties>
-
   <!-- Parent -->
   <parent>
     <groupId>org.jboss.errai</groupId>
@@ -22,15 +18,13 @@
 
     <dependency>
       <groupId>org.jboss.errai</groupId>
-      <artifactId>errai-client-local-class-hider</artifactId>
-      <version>${parent.version}</version>
+      <artifactId>errai-client-local-class-hider</artifactId>      
     </dependency>
 
     <!-- JBoss -->
     <dependency>
       <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-cli</artifactId>
-      <version>${jboss.version}</version>
+      <artifactId>wildfly-cli</artifactId>      
       <exclusions>
         <exclusion>
           <groupId>org.wildfly</groupId>
@@ -41,8 +35,7 @@
 
     <dependency>
       <groupId>org.jboss.as</groupId>
-      <artifactId>jboss-as-dist</artifactId>
-      <version>7.1.1.Final</version>
+      <artifactId>jboss-as-dist</artifactId>      
       <type>zip</type>
     </dependency>
 

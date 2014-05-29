@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.jboss.integration-platform</groupId>
     <artifactId>jboss-integration-platform-parent</artifactId>
-    <version>6.0.0.CR7</version>
+    <version>6.0.0.CR9</version>
   </parent>
 
   <developers>
@@ -135,7 +135,7 @@
       <dependency>
         <groupId>org.jboss.integration-platform</groupId>
         <artifactId>jboss-integration-platform-bom</artifactId>
-        <version>6.0.0.CR7</version>
+        <version>6.0.0.CR9</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -158,6 +158,12 @@
         <groupId>org.jboss.errai</groupId>
         <artifactId>errai-codegen-gwt</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.errai</groupId>
+        <artifactId>errai-codegen</artifactId>
+        <type>test-jar</type>      
+        <version>${project.version}</version>      
       </dependency>
       <dependency>
         <groupId>org.jboss.errai</groupId>
@@ -232,6 +238,11 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.errai</groupId>
+        <artifactId>errai-jpa-datasync</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.errai</groupId>
         <artifactId>errai-js</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -288,6 +299,11 @@
       <dependency>
         <groupId>org.jboss.errai</groupId>
         <artifactId>errai-security-picketlink</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.errai</groupId>
+        <artifactId>errai-client-local-class-hider</artifactId>      
         <version>${project.version}</version>
       </dependency>
 
@@ -729,6 +745,12 @@
       </dependency>
 
       <dependency>
+        <groupId>com.google.gwt.gwtmockito</groupId>
+        <artifactId>gwtmockito</artifactId>
+        <version>1.1.3</version>        
+      </dependency>
+
+      <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${version.org.slf4j}</version>
@@ -750,6 +772,12 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
         <version>${version.org.slf4j}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>de.benediktmeurer.gwt-slf4j</groupId>
+        <artifactId>gwt-slf4j</artifactId>
+        <version>0.0.2</version>
       </dependency>
 
       <dependency>
@@ -853,7 +881,45 @@
         <artifactId>xmlunit</artifactId>
         <version>${version.xmlunit}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>4.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-dist</artifactId>
+        <version>7.1.1.Final</version>  
+        <type>zip</type>            
+      </dependency>
+
+      <dependency>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-cli</artifactId>
+        <version>8.0.0.Final</version>        
+      </dependency>
+
+      <dependency>
+        <groupId>org.lesscss</groupId>
+        <artifactId>lesscss</artifactId>
+        <version>1.3.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>1.7.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.stanbol</groupId>
+        <artifactId>org.apache.stanbol.enhancer.engines.htmlextractor</artifactId>
+        <version>0.10.0</version>      
+      </dependency>
     </dependencies>
+
   </dependencyManagement>
 
   <build>

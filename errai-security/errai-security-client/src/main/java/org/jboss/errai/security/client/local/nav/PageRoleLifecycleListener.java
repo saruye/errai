@@ -20,9 +20,6 @@ import org.jboss.errai.ioc.client.lifecycle.api.Access;
 import org.jboss.errai.ioc.client.lifecycle.api.LifecycleEvent;
 import org.jboss.errai.ioc.client.lifecycle.api.LifecycleListener;
 import org.jboss.errai.security.client.local.api.SecurityContext;
-import org.jboss.errai.ui.nav.client.local.UniquePageRole;
-import org.jboss.errai.ui.nav.client.local.api.LoginPage;
-import org.jboss.errai.ui.nav.client.local.api.SecurityError;
 
 import com.google.gwt.user.client.ui.IsWidget;
 
@@ -49,13 +46,10 @@ public class PageRoleLifecycleListener<W extends IsWidget> implements LifecycleL
             || !securityContext.getCachedUser().hasAllRoles(roles)) {
       event.veto();
 
-      final Class<? extends UniquePageRole> destination;
       if (!securityContext.hasCachedUser())
-        destination = LoginPage.class;
+        securityContext.redirectToLoginPage(event.getInstance().getClass());
       else
-        destination = SecurityError.class;
-
-      securityContext.navigateToPage(destination);
+        securityContext.redirectToSecurityErrorPage(event.getInstance().getClass());
     }
   }
 
