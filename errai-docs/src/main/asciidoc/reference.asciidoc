@@ -107,7 +107,7 @@ public class App {
 }
 ----
 
-For this code to run properly, you must use the the Errai Forge Addon _Add Errai Features_ command to install _Errai IOC_.
+For this code to run properly, you must use the Errai Forge Addon _Add Errai Features_ command to install _Errai IOC_.
 
 Create new subfolder, _client/local_, under the folder containing your GWT module file. Then create a file, _App.java_, in this new package and copy the above sample code (making sure to replace the top comment with the package declaration).
 
@@ -160,7 +160,44 @@ If you are using errai-tutorial, you should see a page with a complaint form.
 
 If you followed the instructions for using the Errai Forge plugin, there should be a blank page with an alert saying "Hello World!".
 
-That's it! You've got your first Errai Application up and running. In the next section we'll setup your IDE.
+That's it! You've got your first Errai Application up and running. In the next section we'll learn how to run super devmode. Otherwise, skip to the section afterwards to setup your IDE.
+
+==== Running your app in Super Devmode
+
+Regular Devmode requires a special browser plugin to run client-side code in a as Java. Super Devmode is an alternative method that compiles code to javascript to be run natively in any browser. With browsers that support source-mapping, it is possible to debug with lines from your original source code within the browser.
+
+To run super devmode you will need to open two terminals in your project. In the first enter:
+
+----
+mvn clean gwt:run
+----
+
+This will launch a classic devmode server for hosting server-side resources. In the second enter:
+
+----
+mvn gwt:run-codeserver
+----
+
+This will launch the super devmode codeserver that hosts compiled GWT code. When the super devmode codeserver is finished compiling your GWT module, it will display a message like this:
+
+----
+The code server is ready.
+Next, visit: http://localhost:9876
+----
+
+Go to the displayed link and copy the two bookmarks *Dev Mode On* and *Dev Mode Off*.
+
+After completing the above, you may run your application as follows:
+
+1. Go to the classic devmode window and click *Copy Link*.
+
+2. Paste the link in to the browser, but **remove** the query paramters (i.e. `?gwt.codesvr=...`).
+
+3. Go to the link. You may see prompts saying that your GWT module needs to be recompiled.
+
+4. Click the *Dev Mode On* bookmark you copied previously. You should see a prompt to compile your GWT module. Click *Compile* to do so.
+
+5. Once the super devmode server has completed, your application should be running.
 
 [[sid-54493220_GettingStartedwithErrai-ConfiguringyourprojectforEclipse]]
 
@@ -316,7 +353,7 @@ Errai CDI as its namesake implies is based on, and is in fact, a partial impleme
 
 These differences aside, using Errai CDI in conjunction with CDI on the server will provide you with a uniform programming model across the client and server code of your application.
 
-This guide does not assume any past experience with CDI. However, you may wish to consider reading the the link:$$http://docs.jboss.org/weld/reference/1.1.5.Final/en-US/html/$$[Weld Documentation] in addition to this guide.
+This guide does not assume any past experience with CDI. However, you may wish to consider reading the link:$$http://docs.jboss.org/weld/reference/1.1.5.Final/en-US/html/$$[Weld Documentation] in addition to this guide.
 
 [[sid-54493502_AGentleIntroductiontoCDI-YourFirstBean]]
 
@@ -1180,14 +1217,13 @@ Note that the only difference between the example in the previous section and th
 
 ErraiBus has support for WebSocket-based communication. When WebSockets are enabled, capable web browsers will attempt to upgrade their COMET-based communication with the server-side bus to use a WebSocket channel.
 
-There are two different ways the bus can enable WebSockets. The first uses a sideband server, which is a small, lightweight server which runs on a different port from the application server. The second is native JBoss AS 7-based integration.
+There are three different ways the bus can enable WebSockets. The first uses a sideband server, which is a small, lightweight server which runs on a different port from the application server. The second is native JBoss AS 7-based integration and the third is to rely in JSR-356 support in WildFly.
 
 [[sid-53380177_WebSockets-Configuringthesidebandserver]]
 
 ==== Configuring the sideband server
 
 Activating the sideband server is as simple as adding the following to the [code]+ErraiService.properties+ file:
-
 
 [source, java]
 ----
@@ -1233,7 +1269,6 @@ You will then need to configure the servlet in your application's [code]+web.xml
 
 Add the following to the [code]+web.xml+ :
 
-
 [source, xml]
 ----
 <context-param>
@@ -1248,7 +1283,6 @@ Add the following to the [code]+web.xml+ :
 ----
 
 This will tell the bus to enable web sockets support. The [code]+websocket-path-element+ specified the path element within a URL which the client bus should request in order to negotiate a websocket connection. For instance, specifying [code]+in.erraiBusWS+ as we have in the snippit above, will result in attempted negotiation at [code]+http://<your_server>:<your_port>/<context_path>/in.erraiBusWS+. For this to have any meaningful result, we must add a servlet mapping that will match this pattern:
-
 
 [source, xml]
 ----
@@ -1284,6 +1318,61 @@ Also make sure to deploy the required errai-bus-jboss7-websocket.jar to your ser
 	</dependency>
 ----
 ====
+
+==== JSR-356 WebSocket support
+
+Errai provides two implementations for this:
+
+. errai-bus-jsr356-websocket: A simple JSR-356 implementation, that does not rely on CDI or Weld.
+. errai-bus-jsr356-websocket-weld: Provides the possibility to use the builtin CDI scopes (javax.enterprise.context.RequestScoped, javax.enterprise.context.SessionScoped, javax.enterprise.context.ConversationScoped). This implementation uses WELD and is intended for JBoss WildFly 8 or higher.
+
+Make sure to add the following project dependency:
+[source, xml]
+----
+<!-- For JSR-356 without depending on Weld -->
+<dependency>
+	<groupId>org.jboss.errai</groupId>
+	<artifactId>errai-bus-jsr356-websocket</artifactId>
+	<version>${errai.version}</version>
+</dependency>
+
+<!-- For JEE environment with Weld-->
+<dependency>
+	<groupId>org.jboss.errai</groupId>
+	<artifactId>errai-bus-jsr356-websocket-weld</artifactId>
+	<version>${errai.version}</version>
+</dependency>
+----
+
+[IMPORTANT]
+.Dependency on Weld!
+====
+The JSR-356 specification is not addressing the integration with builtin CDI scopes which is what the [code]+<artifactId>errai-bus-jsr356-websocket-weld</artifactId>+ module provides. It therefore depends directly to JBoss Weld. If you use a non Weld-based middleware, you can use [code]+<artifactId>errai-bus-jsr356-websocket</artifactId>+ instead.
+====
+
+To configure ErraiBus that WebSocket communication should be used, define the following in your [code]+web.xml+
+[source, xml]
+----
+<context-param>
+	<param-name>websockets-enabled</param-name>
+	<param-value>true</param-value>
+</context-param>
+----
+
+[IMPORTANT]
+.Do not remove the regular ErraiBus servlet mappings!
+====
+When configuring ErraiBus to use JSR-356 WebSocket, you _do not_ remove the existing servlet mappings for the bus. This is because ErraiBus _always_ negotiates WebSocket sessions over the COMET channel.
+====
+
+You can also define filters when using the JSR-356 WebSocket implementation. These filters will be executed for each received ErraiBus message on the server. Your filters need to implement [code]+org.jboss.errai.bus.server.websocket.jsr356.filter.WebSocketFilter+ and must be configured in your appliations's [code]+web.xml+ as an ordered comma separated list:
+[source, xml]
+----
+<context-param>
+	<param-name>errai-jsr-356-websocket-filter</param-name>
+	<param-value>foo.bar.FooFilter,foo.bar.BarFilter</param-value>
+</context-param>
+----
 
 [[sid-59146643]]
 
@@ -1700,7 +1789,7 @@ The type [code]+org.jboss.errai.bus.client.framework.MessageBus+ is globally inj
 
 ===== RequestDispatcher
 
-The type [code]+org.jboss.errai.bus.client.framework.RequestDispatcher+ is globally injectable into any bean. Injecting this type will provide a [code]+RequestDispatcher+ instance capable of delivering any messages provided to it, to the the [code]+MessageBus+.
+The type [code]+org.jboss.errai.bus.client.framework.RequestDispatcher+ is globally injectable into any bean. Injecting this type will provide a [code]+RequestDispatcher+ instance capable of delivering any messages provided to it, to the [code]+MessageBus+.
 
 .Injecting a RequestDispatcher
 ====
@@ -1824,7 +1913,7 @@ A problem commonly associated with building large applications in the browser is
 
 ===== Controlling Startup
 
-In order to prevent initialization of the the bus and it's services so that you can do necessary configuration, especially if you are writing extensions to the Errai framework itself, you can create an implicit startup dependency on your bean by injecting an [code]+org.jboss.errai.ioc.client.api.InitBallot<?>+.
+In order to prevent initialization of the bus and it's services so that you can do necessary configuration, especially if you are writing extensions to the Errai framework itself, you can create an implicit startup dependency on your bean by injecting an [code]+org.jboss.errai.ioc.client.api.InitBallot<?>+.
 
 .Using an InitBallot to Control Startup
 ====
@@ -4805,7 +4894,6 @@ DataBinder<Customer> dataBinder = DataBinder.forModel(existingCustomerObject, In
 
 Bindings can be created by calling the [code]+bind+ method on a [code]+DataBinder+ instance, thereby specifying which widgets should be bound to which properties of the model. It is possible to use property chains for bindings, given that all nested properties are of bindable types. When binding to [code]+customer.address.streetName+, for example, both [code]+customer+ and [code]+address+ have to be of a type annotated with [code]+@Bindable+.
 
-
 [source, java]
 ----
 public class CustomerView {
@@ -6213,7 +6301,26 @@ public class NavBar extends Composite {
 
 === Extended styling with LESS
 
-Errai also supports link:$$http://lesscss.org$$[LESS] stylesheets. To get started using these you'll have to create a LESS stylesheet and place it on the classpath of your project. Errai will convert the LESS stylesheet to css preform optimisations on it and ensure that is get injected into the pages of your application. It will also obfuscate the class selectors and replace the use of those in your templates. To be able to use the selectors in your code you can use:
+Errai also supports link:$$http://lesscss.org$$[LESS] stylesheets. To get started using these you'll have to create a LESS stylesheet and place it on the classpath of your project and declare their ordering with the `StyleDescriptor` annotation. Every application should have 0 or 1 classes annotated with `StyleDescriptor` like the following example:
+
+[source, java]
+----
+package org.jboss.errai.example;
+
+@StyleDescriptor({ "/main.less", "other.css" })
+public class MyStyleDescriptor {
+}
+----
+
+The two files listed above, `main.less` and `other.css`, will be compiled into a single stylesheet by Errai. The relative path for `other.css` will be loaded relative to the package `org.jboss.errai.example`.
+
+[NOTE]
+.Do Not Declare Imported Stylesheets
+====
+It is only necessary to declare top-level stylesheets with the `StyleDescriptor`. If a CSS or LESS resource is only meant to be imported by another LESS stylesheet, then it need only be on the classpath.
+====
+
+Errai will convert the LESS stylesheet to css, perform optimisations on it, and ensure that is get injected into the pages of your application. It will also obfuscate the class selectors and replace the use of those in your templates. To be able to use the selectors in your code you can use:
 
 
 [source, java]
@@ -6224,7 +6331,7 @@ public class MyComponent extends Component {
 
   ...
 
-  @PostCreate
+  @PostConstruct
   private void init() {
     textBox.setStyleName(lessStyle.get("input"));
   }
@@ -6295,7 +6402,7 @@ Errai Navigation has these main parts:
 * The [code]+TransitionTo<P>+, [code]+TransitionAnchor<P>+, and [code]+TransitionToRole<R>+ classes are injectable types that provide links to other pages.
 * The [code]+Navigation+ singleton offers control over the navigation system as a whole.
 
-The [code]+Navigation+ singleton owns a GWT Panel called the _navigation panel_ . This panel always contains a widget corresponding to the the fragment ID (the part after the # symbol) in the browser's location bar. Whenever the fragment ID changes for any reason (for example, because the user pressed the back button, navigated to a bookmarked URL, or simply typed a fragment ID by hand), the widget in the navigation panel is replaced by the widget associated with that fragment ID. Likewise, when the application asks the navigation system to follow a link, the fragment ID in the browser's location bar is updated to reflect the new current page.
+The [code]+Navigation+ singleton owns a GWT Panel called the _navigation panel_ . This panel always contains a widget corresponding to the fragment ID (the part after the # symbol) in the browser's location bar. Whenever the fragment ID changes for any reason (for example, because the user pressed the back button, navigated to a bookmarked URL, or simply typed a fragment ID by hand), the widget in the navigation panel is replaced by the widget associated with that fragment ID. Likewise, when the application asks the navigation system to follow a link, the fragment ID in the browser's location bar is updated to reflect the new current page.
 
 [[sid-54493676_ErraiUINavigation-DeclaringaPage]]
 
@@ -6456,7 +6563,6 @@ The easiest way to declare a link between pages is to inject an instance of [cod
 
 Here is an example declaring an anchor link from the templated welcome page to the item list page. The first code sample would go in WelcomePage.java while the second would go in the WelcomePage.html, the associated html template.
 
-
 [source, java]
 ----
 @Page(role = DefaultPage.class)
@@ -6467,7 +6573,6 @@ public class WelcomePage extends Composite {
 
 }
 ----
-
 
 [source, xml]
 ----
@@ -6485,7 +6590,6 @@ You can inject any number of links into a page. The only restriction is that the
 Sometimes it is necessary to manually transition between pages (such as in response to an event being fired). To declare a manual link from one page to another, inject an instance of [code]+TransitionTo<P>+ , where [code]+P+ is the class of the target page.
 
 This code declares a manual transition from the welcome page to the item list page:
-
 
 [source, java]
 ----
@@ -6637,6 +6741,42 @@ Then in your GWT module descriptor you need to override the default navigation p
   <when-type-is class="org.jboss.errai.ui.nav.client.local.NavigatingContainer"/>
 </replace-with>
 ----
+
+==== Handling Navigation Errors
+
+When a user enters a url for an Errai page that does not exist an error is logged and the app navigates to the `DefaultPage`. It is possible to override this behaviour by setting an error handler on `Navigation`.
+
+Here is an example of a class that registers a navigation error handler that redirects the user to a special `PageNotFound` page:
+
+[source, java]
+----
+@ApplicationScoped
+public class NavigationErrorHandlerSetter {
+
+  @Inject
+  private Navigation navigation;
+
+  @PostConstruct
+  public void setErrorHandler() {
+    navigation.setErrorHandler(new PageNavigationErrorHandler() {
+
+      @Override
+      public void handleError(Exception exception, String pageName) {
+        navigation.goTo("PageNotFound");
+      }
+
+      @Override
+      public void handleError(Exception exception, Class<? extends PageRole> pageRole) { <1>
+        navigation.goTo("PageNotFound");
+      }
+    });
+  }
+
+}
+----
+
+<1> Note that this method signature is for errors that occur from calls to `Navigation.goToWithRole(Class<? extends UniquePageRole>)`. These kinds of errors can be avoided at compile-time by injecting `TransitionToRole` instances into your `@Page` classes instead of directly calling that method.
+
 
 [[sid-54493676_ErraiUINavigation-ViewingtheGeneratedNavigationGraph]]
 
@@ -6917,7 +7057,48 @@ Client-side interceptors are used for caching so that generally only calls to `l
 
 === RestrictedAccess
 
-The annotation `@RestrictedAccess` is the only annotation necessary to secure a resource or UI element. In general, `@RestrictedAccess` blocks a resource from users who are not logged in; if an array of roles are passed in, users without the declared roles are prevented access to the annotated resource. Below we will explain how different resources are blocked from unauthorized users.
+The annotation `@RestrictedAccess` is the only annotation necessary to secure a resource or UI element. In general, `@RestrictedAccess` blocks a resource from users who are either not logged in or who lack required roles. Roles are defined through the `@RestrictedAccess` annotation in one of the following two ways.
+
+==== Simple Roles as Strings
+
+Simple roles are roles that can be directly mapped to Strings (the String value being the role name). Simple roles are defined by defining an array of Strings in the `roles` parameter of `@RestrictedAccess`. Two simple roles are equivalent if they have the same name.
+
+Here is an example usage of `@RestrictedAccess` with two simple roles, "user" and "admin":
+
+[source,java]
+----
+@RestrictedAccess(roles = { "user", "admin" })
+----
+
+==== Provided Roles
+
+Conceptually, a provided can be used to implement a more complex security system. In practice, a provided role is some concrete type that implements the `Role` interface and overrides `Object.equals(Object)`. Provided roles are declared on a resource by creating a `RequiredRolesProvider` that produces these roles and assigning the type to the `providers` parameter of `@RestrictedAccess`.
+
+Here is an sample of a `RequireRolesProvider` and its usage with `@RestrictedAccess`. This example defines equivalent roles to the above example using simple roles.
+
+[source,java]
+----
+@Dependent <1>
+public class AdminRolesProvider implements RequiredRolesProvider {
+
+  @Override
+  public Set<Role> getRoles() {
+    return new HashSet<Role>(Arrays.asList(
+      new RoleImpl("user"), <2>
+      new RoleImpl("admin")
+    ));
+  }
+}
+----
+
+[source,java]
+----
+@RestrictedAccess(providers = { AdminRolesProvider.class })
+----
+
+<1> The role provider implementation must be a CDI bean so that it can be looked up dynamically on the client and server.
+
+<2> `RoleImpl` is the internal implementation used for simple roles. A `RoleImpl` equals another role if they are both instances of `RoleImpl` and have matching names.
 
 ==== RPC Services
 
@@ -6951,6 +7132,12 @@ public interface MixedService {
   public void adminService();
 }
 ----
+
+.Using Role Providers with RPC Services
+[NOTE]
+====
+If a `RequiredRolesProvider` is used on an RPC interface, the provider type must be located in a shared package. Security checks for RPCs are performed on the client and the server, so placing the type in a client- or server-only package will result in run-time errors.
+====
 
 ===== Error Callbacks
 
@@ -7218,21 +7405,152 @@ public class NavBar extends Composite {
 }
 ----
 
+=== Form Based Login
+
+If you do enable the Errai Security cookie, it is possible to use a form-based login from outside your GWT/Errai app. The `errai-security-server` jar contains a servlet filter for encoding the currently authenticated user as a cookie in the http response. Here are the steps for setting this up:
+
+. Create a login page using an html form that posts to a servlet-filter. If you are using Errai Security with PicketLink you will want to use the `org.picketlink.authentication.web.AuthenticationFilter` servlet-filter. Otherwise, you will need to implement one yourself that authenticates the user by calling `AuthenticationService.login(String, String)` method.
+
+. Add this filter-mapping for setting the Errai Security user cookie:
++
+[source,xml]
+----
+  <filter-mapping>
+    <filter-name>ErraiUserCookieFilter</filter-name>
+    <url-mapping>/gwt-host-page.html</url-mapping>
+  </filter-mapping>
+----
++
+The mapped URL should be that of your GWT Host Page.
++
+[IMPORTANT]
+.This mapping must come after the filter that authenticates the user
+====
+If this filter maps to the same URL as the filter for authentication, this filter must come after the authentication filter or else it will set the cookie before the user has logged in.
+====
+
+. Make sure this is in your ErraiApp.properties file: `errai.security.user_cookie_enabled=true`
+
 === Using an Alternative to PicketLink
 
 All Errai Security authentication is implemented with Errai Remote Procedure Calls to the `AuthenticationService`. A default implementation of this interface using PicketLink is provided in the `errai-security-picketlink` jar. But it is possible to use a different sever-side security framework by providing your own custom implementation of `AuthenticationService` and annotating it with `@Service`. In that case your project should not depend on `errai-security-picketlink`.
 
-==== Form Based Login
+=== Using Keycloak for Authentication
 
-If you do enable the Errai Security cookie, it is possible to use a form-based login from outside your GWT/Errai app. Here are the steps required:
+link:$$http://keycloak.jboss.org/$$[Keycloak] is is a new project that provides integrated SSO and IDM for browser apps and RESTful web services. By using Keycloak it is possible to outsource the responsibility of authentication and account management from your application entirely. Errai Security provides an optional `errai-security-keycloak` jar that provides an implementation of the `AuthenticationService` that works with Keycloak.
 
-. Create a login page using an html form that posts to a Java servlet.
+==== How It Works (Overview)
 
-. On the servlet attempt to login with the `AuthenticationService`. If a user's login request is successful, use the `org.jboss.errai.security.shared.api.UserCookieEncoder` to create a cookie.
+From the perspective of a visitor, here is what happens when she attempts to log in:
 
-. Set the cookie in the HTTP response and redirect the user to your Errai app.
+* The visitor is redirected to a Keycloak login page.
 
-. Make sure this is in your ErraiApp.properties file: `errai.security.user_cookie_enabled=true`
+* The visitor submits her credentials through the Keycloak login page.
+
+* Assuming the credentials are valid, the visitor is redirected back to the web app, where she is now logged in.
+
+===== Keycloak Token
+
+Behind the scenes, when the visitor successfully submits credentials she is redirected back to the web app with a Keycloak Access Token, which contains information that is configurable from within Keycloak. A servlet filter is used to extract the token from the request and assign it to the `AuthenticationService` implementation. At this point the User is now logged in to your application.
+
+==== Setup
+
+To add Keycloak integration to your application:
+
+. Setup a Keycloak server. Please consult the link:$$http://keycloak.jboss.org/docs.html$$[Keycloak documentation] for details on how this is achieved.
+
+  .. As part of your setup you should create a new realm for your application.
+
+  .. Add roles and users to your realm.
+
+  .. In your new realm you should create a new application (you can also use OAuth).
+
+  .. After creating your application select it from the list and make sure to adjust the following settings as appropriate:
+
+    * **Redirect URI** -- You should use this to whitelist pages that will be redirected to after a successful login.
+
+    * **Claims** -- You will need to explicitly enable any information about users that your application requires access to.
+
+    * **Scope** -- Move any roles that users in your app *may* possess to the "Assigned Roles". (Note: moving the roles to "Assigned Roles" does not mean *all* users will have this role. It does mean that these roles will be visible to your app for users that do have them.)
+
+  .. After adjusting the settings for your app, go to the *Installation* tab and select "keycloak.json" in the *Format Option* list. Copy this into a "keycloak.json" file in your `WEB-INF` directory.
+
+. Add the `errai-security-keycloak` jar to your project. In maven, the dependency is `org.jboss.errai:errai-security-keycloak`.
+
+. Configure the `ErraiUserCookieFilter` in your `web.xml`. All that is necessary is adding a filter-mapping for your GWT host page like so:
++
+[source,xml]
+----
+  <filter-mapping>
+    <filter-name>ErraiUserCookieFilter</filter-name>
+    <url-pattern>/index.html</url-pattern>
+  </filter-mapping>
+----
+
+. Configure the `ErraiLoginRedirectFilter` in your `web.xml`.
+
+  .. Create a filter-mapping of this filter onto a path that will act as a url to the Keycloak login page. For example, if your deployed app is called `my-app` and you wanted `<server-uri>/my-app/app-login` as your login url then you would add the following:
++
+[source,xml]
+----
+  <filter-mapping>
+    <filter-name>ErraiLoginRedirectFilter</filter-name>
+    <url-pattern>/app-login</url-pattern>
+  </filter-mapping>
+----
+
+  .. Add a security-constraint to login url. This is what actually causes the redirection to Keycloak. All the filter does is redirect back to your app (which happens after the login completes). For the previous example, the constraint would look like this:
++
+[source,xml]
+----
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Login</web-resource-name>
+      <url-pattern>/app-login</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>*</role-name>
+    </auth-constraint>
+  </security-constraint>
+----
+
+  .. Optionally configure the URL that the `ErraiLoginRedirectFilter` redirects to. You can do this with the `redirectLocation` param, which takes a path relative to the app context:
++
+[source,xml]
+----
+  <filter>
+    <filter-name>ErraiLoginRedirectFilter</filter-name>
+    <init-param>
+      <param-name>redirectLocation</param-name>
+      <param-value>/index.jsp</param-value>
+    </init-param>
+  </filter>
+----
+
+. Set the login method to use Keycloak in you `web.xml`:
++
+[source,xml]
+----
+  <login-config>
+    <auth-method>KEYCLOAK</auth-method>
+    <realm-name>example</realm-name>
+  </login-config>
+----
+
+. Add roles available to users in your application to the `web.xml`. Here is an example declaration of a "user" role:
++
+[source,xml]
+----
+  <security-role>
+    <role-name>user</role-name>
+  </security-role>
+----
+
+.All users must have at least one role
+[IMPORTANT]
+====
+With this configuration all users must have at least a single role, or else they will not be redirected propertly. Unfortunately, there is no way to define a security-constraint that only requires authentication. The simplest solution is to add a default role to your realm.
+====
 
 [[sid-74908675]]
 
@@ -7477,6 +7795,59 @@ Here are some additional JVM arguments that can be passed to the JBossLauncher:
 ==== Deployment to an Application Server
 
 We provide integration with the link:$$http://jboss.org/jbossas$$[JBoss Application Server], but the requirements are basically the same for other vendors. When running a GWT client app that leverages CDI beans on a Java EE 6 application server, CDI is already part of the container and accessible through JNDI ([code]+java:/BeanManager+).
+
+
+[[Offline-Mode]]
+
+=== Errai Offline Mode Configuration
+
+Errai provides special support for HTML5's application caching mechanism that enables applications to work offline. If you're 
+not familiar with the HTML5 application cache you can find all the details link:$$https://developer.mozilla.org/en-US/docs/Web/HTML/Using_the_application_cache$$[here].
+
+As GWT compiles separate browser-specific JavaScript permutations for your application, it is not enough to manually create a cache manifest file and simply list all generated JavaScript files. This would cause every browser to download and cache JavaScript files that it doesn't need in the first place (i.e. Safari would download and cache JavaScript files that were generated for Internet Explorer only). Errai solves this problem by using a custom linker to generate user-agent specific cache manifest files.
+
+The following steps are necessary to activate this linker:
+
+* Define the linker in your gwt.xml module descriptor:
+
+[source, xml]
+----
+<define-linker name="offline" class="org.jboss.errai.offline.linker.DefaultCacheManifestLinker" />
+<add-linker name="offline" />
+----
+
+* Add the manifest (`your_module_name`/errai.appcache) to the `html` tag in your host page:
+
+[source, xml]
+----
+<html manifest="your_module_name/errai.appcache">  
+----
+
+* Add a mime-mapping to your web.xml file (you can skip this step if you deploy the errai-javaee-all.jar as part of your application):
+
+[source, xml]
+----
+<mime-mapping>
+  <extension>manifest</extension>
+  <mime-type>text/cache-manifest</mime-type>
+</mime-mapping>
+----
+  
+* Make sure the `errai-common.jar` file is deployed as part of your application. It contains a servlet that will provide the correct user-agent specific manifest file in response to requests to your_module_name/errai.appcache
+
+* To obtain manifests that contain other files in addition to those generated by the `DefaultCacheManifestLinker`, create a subclass that overrides `otherCachedFiles()`, and use this subclass as a linker instead:
+
+[source, java]
+----
+@Shardable
+@LinkerOrder(Order.POST)
+public class MyCacheManifestLinker extends DefaultCacheManifestLinker {
+  @Override
+  protected String[] otherCachedFiles() {
+    return new String[] {"/my-app/index.html","/my-app/css/application.css"};
+  }
+}
+----
 
 [[sid-5931354]]
 
@@ -9027,6 +9398,12 @@ Here are the steps you'll need to take to get your project running after you upd
 * Errai's custom jetty launcher (org.jboss.errai.cdi.erver.gwt.JettyLauncher) is no longer needed and has been deleted. Simply remove the corresponding -server parameter from your GWT launch configuration if you still use it.
 
 * The whole artifact errai-cdi-jetty has been deleted and is no longer required. Delete the JAR file from your project or remove the corresponding dependency in your pom.xml
+
+=== Upgrading to Errai 3.1 from 3.0
+
+Here are the steps you'll need to take to get your project running after you update:
+
+* If you are using Errai to compile LESS/CSS files you will need to declare a `StyleDescriptor` listing the resources to compile in the desired order. This change was made to provide a deterministic and configurable order of styles in the generated CSS.
 
 [[sid-5833087]]
 

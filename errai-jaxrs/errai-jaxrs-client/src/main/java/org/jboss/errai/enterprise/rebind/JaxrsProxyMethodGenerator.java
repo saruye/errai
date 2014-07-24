@@ -52,6 +52,7 @@ import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.common.client.framework.CallContextStatus;
 import org.jboss.errai.enterprise.client.jaxrs.ResponseDemarshallingCallback;
 import org.jboss.errai.enterprise.client.jaxrs.api.ResponseCallback;
+import org.jboss.errai.enterprise.client.jaxrs.api.RestClient;
 import org.jboss.errai.enterprise.client.jaxrs.api.interceptor.RestCallContext;
 import org.jboss.errai.enterprise.rebind.TypeMarshaller.PrimitiveTypeMarshaller;
 
@@ -59,7 +60,6 @@ import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Cookies;
 
 /**
  * Generates a JAX-RS remote proxy method.
@@ -297,7 +297,7 @@ public class JaxrsProxyMethodGenerator {
               Stmt.nestedCall(cookieParam);
 
         setCookie.if_(BooleanOperator.NotEquals, null)
-            .append(Stmt.invokeStatic(Cookies.class, "setCookie", cookieName, marshal(cookieParam)))
+            .append(Stmt.invokeStatic(RestClient.class, "setCookie", cookieName, marshal(cookieParam)))
             .finish();
 
         block.addStatement(setCookie);
@@ -352,12 +352,23 @@ public class JaxrsProxyMethodGenerator {
                       .append(
                           Stmt.if_(
                               BooleanExpressionBuilder.create(
+                                 StringStatement.of("getResult()", Object.class), BooleanOperator.NotEquals, Stmt
+                                      .loadLiteral(null)))
+                              .append(
+                                  Stmt.loadVariable("remoteCallback").invoke("callback",
+                                          StringStatement.of("getResult()", Object.class)))
+                              .append(Stmt.load(false).returnValue())
+                              .finish()
+                          .elseif_(
+                              BooleanExpressionBuilder.create(
                                   Stmt.loadVariable("providedErrorCallback"), BooleanOperator.NotEquals, Stmt
                                       .loadLiteral(null)))
                               .append(
-                                  Stmt.loadVariable("providedErrorCallback").invoke("error",
+                                  Stmt.nestedCall(
+                                    Stmt.loadVariable("providedErrorCallback").invoke("error",
                                       Variable.get("message"),
                                       Variable.get("throwable")))
+                                  .returnValue())
                               .finish())
                       .append(Stmt.load(true).returnValue())
                       .finish()

@@ -5,7 +5,7 @@
   <groupId>org.jboss.errai.demos</groupId>
   <name>Errai::JPA::Demos::Basic</name>
   <artifactId>errai-jpa-demo-basic</artifactId>
-  <version>3.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <url>http://jboss.org/errai/errai</url>
@@ -62,35 +62,17 @@
     <maven.clean.plugin.version>2.4.1</maven.clean.plugin.version>
     <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
     <maven.deploy.plugin.version>2.7</maven.deploy.plugin.version>
-    <maven.gwt.plugin.version>2.5.1</maven.gwt.plugin.version>
+    <maven.gwt.plugin.version>2.6.1</maven.gwt.plugin.version>
     <jetty.version>6.1.25</jetty.version>
     <weld.version>1.1.6.Final</weld.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-
       <dependency>
         <groupId>org.jboss.errai.bom</groupId>
-        <artifactId>errai-version-master</artifactId>
+        <artifactId>errai-bom</artifactId>
         <version>${project.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jboss.errai</groupId>
-        <artifactId>errai-parent</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <!-- Question: should a project have to import this too? Could errai-bom should import it recursively? -->
-      <dependency>
-        <groupId>org.jboss.spec</groupId>
-        <artifactId>jboss-javaee-6.0</artifactId>
-        <version>3.0.2.Final</version> <!-- FIXME should use a property here I think -->
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -209,19 +191,16 @@
         <dependency>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-naming</artifactId>
-          <version>${jetty.version}</version>
           <scope>compile</scope>
         </dependency>
         <dependency>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty</artifactId>
-          <version>${jetty.version}</version>
         </dependency>
 
         <dependency>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-plus</artifactId>
-          <version>${jetty.version}</version>
         </dependency>
       </dependencies>
     </profile>
@@ -552,7 +531,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>gwt-maven-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>${maven.gwt.plugin.version}</version>
         <configuration>
           <strict>true</strict>
           <logLevel>INFO</logLevel>

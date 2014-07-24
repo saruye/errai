@@ -5,18 +5,19 @@
   <parent>
     <artifactId>errai-parent</artifactId>
     <groupId>org.jboss.errai</groupId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>errai-ui</artifactId>
   <name>Errai::UI</name>
 
-  <properties>
-    <weld.version>1.1.6.Final</weld.version>
-  </properties>
-
   <dependencies>
+    <dependency>
+      <groupId>org.jboss.errai</groupId>
+      <artifactId>errai-common</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.jboss.errai</groupId>
       <artifactId>errai-ioc</artifactId>
@@ -42,6 +43,7 @@
     </dependency>
 
     <!-- GWT -->
+    <!-- Must come after errai-common is inherited for patched JUnitShell -->
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-user</artifactId>
@@ -129,7 +131,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.7</version>
         <configuration>
           <includes>org/w3c/dom/**</includes>
           <excludes>**/bootstrap/**,**/ls/**</excludes>
@@ -144,9 +145,9 @@
             <configuration>
               <artifactItems>
                 <artifactItem>
+                  <!-- Do not add a version here. The dependencyManaged version will be used. -->
                   <groupId>xml-apis</groupId>
                   <artifactId>xml-apis</artifactId>
-                  <version>1.4.01</version>
                   <classifier>sources</classifier>
                   <overWrite>false</overWrite>
                   <outputDirectory>target/generated-sources/org/w3c/dom/super</outputDirectory>
