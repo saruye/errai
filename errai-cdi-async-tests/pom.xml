@@ -71,7 +71,7 @@
             </configuration>
           </plugin>
           <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
+            <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
               <skipTests>false</skipTests>
               <additionalClasspathElements>
@@ -79,11 +79,12 @@
                 </additionalClasspathElement>
                 <additionalClasspathElement>${basedir}/src/test/java/</additionalClasspathElement>
               </additionalClasspathElements>
+              <useSystemClassLoader>false</useSystemClassLoader>
               <useManifestOnlyJar>false</useManifestOnlyJar>
               <forkMode>pertest</forkMode>
               <!-- DO NOT REMOVE THE errai.ioc.experimental.infer_dependent_by_reachability 
                 flag or the testsuite WILL fail. -->
-              <argLine>${argLine} -Xmx1g -Derrai.devel.nocache=true -Dgwt.args='-testBeginTimeout 5' -Derrai.hosted_mode_testing=true -Derrai.ioc.experimental.infer_dependent_by_reachability=true</argLine>
+              <argLine>${argLine} -Xmx1g -Derrai.devel.nocache=true -Dgwt.args='-testBeginTimeout 5 ${gwtArgs}' -Derrai.hosted_mode_testing=true -Derrai.ioc.experimental.infer_dependent_by_reachability=true</argLine>
 
               <systemProperties>
                 <!-- Must disable long polling for automated tests to succeed -->
@@ -97,8 +98,11 @@
                   <name>errai.marshalling.server.classOutput.enabled</name>
                   <value>false</value>
                 </property>
-
               </systemProperties>
+              <includes>
+                <include>**/*Test.java</include>
+                <include>**/*Tests.java</include>
+              </includes>
             </configuration>
           </plugin>          
         </plugins>

@@ -98,7 +98,7 @@ runtime dependencies on it and it breaks deployment on JBoss AS and Tomcat -->
        <build>
          <plugins>
            <plugin>
-             <artifactId>maven-surefire-plugin</artifactId>
+             <artifactId>maven-failsafe-plugin</artifactId>
              <configuration>
                <skipTests>false</skipTests>
                <additionalClasspathElements>
@@ -111,7 +111,7 @@ runtime dependencies on it and it breaks deployment on JBoss AS and Tomcat -->
           prevents subsequent tests from succeeding -->
                <forkMode>pertest</forkMode>
 
-               <argLine>${argLine} -Xmx2048m -Dgwt.gen=/tmp/gwt_test_gen_out/ -Dgwt.args='-testBeginTimeout 5' -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005</argLine>
+               <argLine>${argLine} -Xmx2048m -Dgwt.gen=/tmp/gwt_test_gen_out/ -Dgwt.args='-testBeginTimeout 5 ${gwtArgs}' -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005</argLine>
 
                <systemProperties>
                  <property>
@@ -139,6 +139,7 @@ runtime dependencies on it and it breaks deployment on JBoss AS and Tomcat -->
 
                <includes>
                  <include>**/*Test.java</include>
+                 <include>**/*Tests.java</include>
                </includes>
                <excludes>
                  <exclude>**/IOCTests.java</exclude>
